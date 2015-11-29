@@ -99,6 +99,10 @@
 #include "libbb.h"
 #include "xregex.h"
 
+#include <signal.h>
+
+extern int __rt_sigtimedwait(const sigset_t* uthese, siginfo_t* uinfo, const struct timespec* uts, size_t sigsetsize);
+
 /* "mdev -s" scans /sys/class/xxx, looking for directories which have dev
  * file (it is of the form "M:m\n"). Example: /sys/class/tty/tty0/dev
  * contains "4:0\n". Directory name is taken as device name, path component
@@ -987,7 +991,7 @@ wait_for_seqfile(const char *seq)
 			dbg2("%s waiting for '%s'", curtime(), seqbuf);
 			do_once = 0;
 		}
-		if (sigtimedwait(&set_CHLD, NULL, &ts) >= 0) {
+		if (__rt_sigtimedwait(&set_CHLD, NULL, &ts, sizeof(sigset_t)) >= 0) {
 			dbg3("woken up");
 			continue; /* don't decrement timeout! */
 		}
